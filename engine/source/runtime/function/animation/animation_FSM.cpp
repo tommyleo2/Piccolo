@@ -70,28 +70,46 @@ namespace Pilot
 
     std::string AnimationFSM::getCurrentClipBaseName() const
     {
-        switch (m_state)
+        static std::unordered_map<States, std::string> state_clip_names{
+            {States::_idle, "idle_walk_run"},
+            {States::_walk_start, "walk_start"},
+            {States::_walk_run, "idle_walk_run"},
+            {States::_walk_stop, "walk_stop"},
+            {States::_jump_start_from_walk_run, "jump_start"},
+            {States::_jump_start_from_idle, "jump_start"},
+            {States::_jump_loop_from_walk_run, "jump_loop"},
+            {States::_jump_loop_from_idle, "jump_loop"},
+            {States::_jump_end_from_walk_run, "jump_stop"},
+            {States::_jump_end_from_idle, "jump_stop"},
+        };
+        auto it = state_clip_names.find(m_state);
+        if (it != state_clip_names.end())
         {
-            case States::_idle:
-                return "idle_walk_run";
-            case States::_walk_start:
-                return "walk_start";
-            case States::_walk_run:
-                return "idle_walk_run";
-            case States::_walk_stop:
-                return "walk_stop";
-            case States::_jump_start_from_walk_run:
-            case States::_jump_start_from_idle:
-                return "jump_start";
-            case States::_jump_loop_from_walk_run:
-            case States::_jump_loop_from_idle:
-                return "jump_loop";
-            case States::_jump_end_from_walk_run:
-            case States::_jump_end_from_idle:
-                return "jump_stop";
-            default:
-                return "idle_walk_run";
+            return it->second;
         }
+        return "idle_walk_run";
+//        switch (m_state)
+//        {
+//            case States::_idle:
+//                return "idle_walk_run";
+//            case States::_walk_start:
+//                return "walk_start";
+//            case States::_walk_run:
+//                return "idle_walk_run";
+//            case States::_walk_stop:
+//                return "walk_stop";
+//            case States::_jump_start_from_walk_run:
+//            case States::_jump_start_from_idle:
+//                return "jump_start";
+//            case States::_jump_loop_from_walk_run:
+//            case States::_jump_loop_from_idle:
+//                return "jump_loop";
+//            case States::_jump_end_from_walk_run:
+//            case States::_jump_end_from_idle:
+//                return "jump_stop";
+//            default:
+//                return "idle_walk_run";
+//        }
     }
 }
 

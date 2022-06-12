@@ -1,5 +1,6 @@
 #include "runtime/function/framework/component/animation/animation_component.h"
 
+#include "core/base/macro.h"
 #include "runtime/function/animation/animation_system.h"
 #include "runtime/function/framework/object/object.h"
 #include <runtime/engine.h>
@@ -69,9 +70,43 @@ namespace Pilot
             float weight = (key_value - l) / (r - l);
 
             blend_state->m_blend_weight[max_smaller + 1] = weight;
-            blend_state->m_blend_weight[max_smaller]     = 1 - weight;
+            blend_state->m_blend_weight[max_smaller] = 1 - weight;
         }
-        blend(desired_ratio, blend_state);
+
+        for (auto& ratio : blend_state->m_blend_ratio)
+        {
+            ratio = desired_ratio;
+        }
+        auto blend_state_data = AnimationManager::getBlendStateWithClipData(*blend_state);
+        std::vector<AnimationPose> poses;
+        for (int i = max_smaller; i <= max_smaller + 1 && i < blend_state->m_values.size(); i++)
+        {
+            AnimationPose pose(blend_state_data.m_blend_clip[i],
+                               blend_state_data.m_blend_weight[i],
+                               blend_state_data.m_blend_ratio[i],
+                               blend_state_data.m_blend_anim_skel_map[i]);
+            m_skeleton.resetSkeleton();
+            m_skeleton.applyAdditivePose(pose);
+            m_skeleton.extractPose(pose);
+            poses.push_back(pose);
+        }
+        if (max_smaller < blend_state->m_values.size() - 1)
+        {
+            poses[0].blend(poses[1]);
+        }
+//        for (int i = 1; i < blend_state_data.m_clip_count; i++)
+//        {
+//            for (auto& pose : poses[i].m_weight.m_blend_weight)
+//            {
+//                pose = blend_state->m_blend_weight[i];
+//            }
+//            poses[0].blend(poses[i]);
+//        }
+
+        m_skeleton.applyPose(poses[0]);
+        m_animation_result = m_skeleton.outputAnimationResult();
+
+//        blend(desired_ratio, blend_state);
     }
     void AnimationComponent::tick(float delta_time)
     {
